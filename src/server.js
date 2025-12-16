@@ -1,9 +1,4 @@
-import { config } from "dotenv";
-
-// Load environment variables FIRST, before any imports
-config();
-console.log("DB_USERNAME:", process.env.DB_USERNAME);
-console.log("DB_PASSWORD:", process.env.DB_PASSWORD);
+import "dotenv/config";
 
 import express from 'express';
 import cors from 'cors';
@@ -19,6 +14,7 @@ const port = 5001;
 app.use(cors());
 
 //Body parser middleware
+app.use(express.static('frontend'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

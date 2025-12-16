@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movie Dashboard</title>
+  <style>
+    /* --- CSS STYLES --- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+
+    /* Navbar */
+    nav {
+      background-color: #ffffff;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { font-size: 1.5rem; font-weight: bold; color: #4a90e2; }
+    .nav-links button {
+      background: none; border: none; font-size: 1rem; cursor: pointer; margin-left: 20px; color: #555; font-weight: 500;
+    }
+    .nav-links button.active { color: #4a90e2; border-bottom: 2px solid #4a90e2; }
+    .logout-btn { color: #dc3545 !important; }
+
+    /* Main Container */
+    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    
+    .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .btn-primary {
+      background-color: #4a90e2; color: white; border: none; padding: 10px 20px;
+      border-radius: 6px; cursor: pointer; font-weight: 600;
+    }
+    .btn-primary:hover { background-color: #357abd; }
+
+    /* Movie Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    /* Movie Card */
+    .card {
+      background: white; border-radius: 10px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s;
+      display: flex; flex-direction: column;
+    }
+    .card:hover { transform: translateY(-5px); }
+    
+    .card-img {
+      height: 300px; background-color: #ddd; object-fit: cover; width: 100%;
+    }
+    .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+    .card-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 5px; }
+    .card-meta { font-size: 0.85rem; color: #777; margin-bottom: 10px; }
+    .card-desc { font-size: 0.9rem; color: #555; margin-bottom: 15px; flex-grow: 1; 
+                 display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;}
+    
+    .card-actions { margin-top: auto; }
+    .btn-add { width: 100%; padding: 8px; background-color: #e2e6ea; border: none; border-radius: 4px; cursor: pointer; }
+    .btn-add:hover { background-color: #dbe0e5; }
+
+    /* Watchlist Badge */
+    .badge {
+      display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: white; margin-bottom: 8px;
+    }
+    .bg-planned { background-color: #6c757d; }
+    .bg-watching { background-color: #17a2b8; }
+    .bg-completed { background-color: #28a745; }
+    .bg-dropped { background-color: #dc3545; }
+
+    /* Modal (Add Movie) */
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;
+    }
+    .modal-content {
+      background: white; padding: 2rem; border-radius: 8px; width: 400px;
+    }
+    .modal-content h2 { margin-bottom: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">MoviesApp</div>
+    <div class="nav-links">
+      <button id="tabBrowse" class="active" onclick="switchTab('browse')">Browse Movies</button>
+      <button id="tabWatchlist" onclick="switchTab('watchlist')">My Watchlist</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    
+    <div id="viewBrowse">
+      <div class="header-actions">
+        <h2>All Movies</h2>
+        <button class="btn-primary" onclick="openModal()">+ Add New Movie</button>
+      </div>
+      <div class="grid" id="browseGrid">
+        <p>Loading movies...</p>
+      </div>
+    </div>
+
+    <div id="viewWatchlist" style="display: none;">
+      <div class="header-actions">
+        <h2>My Watchlist</h2>
+      </div>
+      <div class="grid" id="watchlistGrid">
+        </div>
+    </div>
+
+  </div>
+
+  <div id="addMovieModal" class="modal">
+    <div class="modal-content">
+      <h2>Add New Movie</h2>
+      <form id="addMovieForm">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="mTitle" required>
+        </div>
+        <div class="form-group">
+          <label>Release Year</label>
+          <input type="number" id="mYear" min="1800" value="2024" required>
+        </div>
+        <div class="form-group">
+          <label>Runtime (mins)</label>
+          <input type="number" id="mRuntime" placeholder="e.g. 120">
+        </div>
+        <div class="form-group">
+          <label>Poster URL</label>
+          <input type="url" id="mPoster" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label>Overview</label>
+          <textarea id="mOverview" rows="3"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" onclick="closeModal()" style="background:none; border:1px solid #ddd; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
+          <button type="submit" class="btn-primary">Save Movie</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    // --- 1. CONFIGURATION & AUTH CHECK ---
+    const API_URL = "http://localhost:5001"; 
+    const token = localStorage.getItem("token");
+
+    // If no token, kick user back to login
+    if (!token) {
+      window.location.href = "index.html";
+    }
+
+    // Attach token to every Axios request automatically
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    // --- 2. STATE & UI FUNCTIONS ---
+    
+    // Switch between "Browse" and "Watchlist" tabs
+    function switchTab(tabName) {
+      document.getElementById('viewBrowse').style.display = tabName === 'browse' ? 'block' : 'none';
+      document.getElementById('viewWatchlist').style.display = tabName === 'watchlist' ? 'block' : 'none';
+      
+      document.getElementById('tabBrowse').className = tabName === 'browse' ? 'active' : '';
+      document.getElementById('tabWatchlist').className = tabName === 'watchlist' ? 'active' : '';
+
+      if(tabName === 'browse') fetchMovies();
+      if(tabName === 'watchlist') fetchWatchlist();
+    }
+
+    //Logout function
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "index.html";
+    }
+
+    function openModal() { document.getElementById('addMovieModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('addMovieModal').style.display = 'none'; }
+
+    // --- 3. API INTERACTIONS ---
+
+    // A. FETCH ALL MOVIES
+    async function fetchMovies() {
+      const grid = document.getElementById('browseGrid');
+      try {
+        // Expected Backend Route: GET /movies
+        const res = await axios.get(`${API_URL}/movies`);
+        const movies = res.data;
+
+        grid.innerHTML = movies.map(movie => `
+          <div class="card">
+            <img src="${movie.poster_url || 'https://via.placeholder.com/300x450?text=No+Poster'}" class="card-img" alt="${movie.title}">
+            <div class="card-body">
+              <div class="card-title">${movie.title}</div>
+              <div class="card-meta">${movie.release_year} • ${movie.runtime || '?'} mins</div>
+              <div class="card-desc">${movie.overview || 'No overview available.'}</div>
+              <div class="card-actions">
+                <button class="btn-add" onclick="addToWatchlist(${movie.id})">Add to Watchlist</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = '<p>Error loading movies.</p>';
+      }
+    }
+
+    // B. ADD MOVIE (Global)
+    document.getElementById('addMovieForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await axios.post(`${API_URL}/movies`, {
+          title: document.getElementById('mTitle').value,
+          release_year: document.getElementById('mYear').value,
+          runtime: document.getElementById('mRuntime').value,
+          poster_url: document.getElementById('mPoster').value,
+          overview: document.getElementById('mOverview').value,
+          // 'created_by' is handled by backend extracting ID from the JWT token
+        });
+        closeModal();
+        fetchMovies(); // Refresh list
+      } catch (err) {
+        alert("Failed to add movie");
+        console.error(err);
+      }
+    });
+
+    // C. FETCH USER WATCHLIST
+    async function fetchWatchlist() {
+      const grid = document.getElementById('watchlistGrid');
+      try {
+        // Expected Backend Route: GET /watchlist (Should join 'watchlist_items' with 'movies')
+        const res = await axios.get(`${API_URL}/watchlist`);
+        const items = res.data;
+
+        if(items.length === 0) {
+            grid.innerHTML = "<p>Your watchlist is empty.</p>";
+            return;
+        }
+
+        grid.innerHTML = items.map(item => `
+          <div class="card">
+             <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=No+Poster'}" class="card-img">
+             <div class="card-body">
+               <div class="card-title">${item.title}</div>
+               <span class="badge bg-${item.status}">${item.status.toUpperCase()}</span>
+               <div class="card-meta">Rating: ${item.rating ? item.rating + '/10' : 'N/A'}</div>
+               <div class="card-actions">
+                 <button class="btn-add" style="background:#ffeeba" onclick="alert('Feature to edit ID ${item.id} coming soon')">Edit Status</button>
+               </div>
+             </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = '<p>Error loading watchlist.</p>';
+      }
+    }
+
+    // D. ADD TO WATCHLIST
+    async function addToWatchlist(movieId) {
+      try {
+        await axios.post(`${API_URL}/watchlist`, {
+          movie_id: movieId,
+          status: 'planned' // Default status
+        });
+        alert("Added to watchlist!");
+      } catch (err) {
+        // Check if error is "Unique violation" (already in list)
+        if(err.response && err.response.status === 409) {
+            alert("This movie is already in your watchlist.");
+        } else {
+            alert("Error adding to watchlist");
+        }
+        console.error(err);
+      }
+    }
+
+    // Initial Load
+    fetchMovies();
+  </script>
+</body>
+</html>
