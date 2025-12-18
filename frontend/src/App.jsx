@@ -7,6 +7,8 @@ import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import Pricing from './pages/landingPage/pricing';
 
+import Dashboard from './pages/Dashboard/Dashboard';
+
 function App() {
   return (
     <BrowserRouter>
@@ -16,6 +18,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/pricing" element={<Pricing />} />
+
+        <Route path="/dashboard" element={<Dashboard />} />
 
       </Routes>
     </BrowserRouter>

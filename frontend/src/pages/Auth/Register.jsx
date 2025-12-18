@@ -1,7 +1,18 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Link } from 'react-router-dom';
+import { register } from '../../services/api';
+import ErrorModal from '../../components/errorModal';
 
 const Register = () => {
+
+const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+
+  
+
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-gray-800 rounded-xl shadow-2xl p-8 border border-gray-700">
