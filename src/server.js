@@ -7,6 +7,9 @@ import cors from 'cors';
 import movieRoutes from './routes/movieRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
+//Import middlewares
+import authMiddleware from './middlewares/authMiddleware.js';
+
 
 const app = express();
 const port = 5001;
@@ -17,6 +20,9 @@ app.use(cors());
 app.use(express.static('frontend'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+//Middlewares
+app.use(authMiddleware);
 
 //API routes
 app.use('/movies', movieRoutes);

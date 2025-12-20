@@ -1,8 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import MovieDetailsModal from './components/movieDetailsModal';
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [viewDetails , setViewDetails] = React.useState("");
 
   // --- HARDCODED DATA (Static) ---
   const movies = [
@@ -20,6 +23,7 @@ const Dashboard = () => {
     // 2. Send user back to Login
     navigate('/login');
   };
+
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 font-sans">
@@ -49,7 +53,9 @@ const Dashboard = () => {
               <span className="text-4xl">🎬</span>
               {/* Hover Overlay */}
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                <button className="bg-white text-black px-4 py-2 rounded-full font-bold text-sm transform scale-90 group-hover:scale-100 transition">
+                <button className="bg-white text-black px-4 py-2 rounded-full font-bold text-sm transform scale-90 group-hover:scale-100 transition"
+                  onClick={() => setViewDetails(movie.id)}
+                >
                   View Details
                 </button>
               </div>
@@ -72,6 +78,13 @@ const Dashboard = () => {
           </div>
         ))}
       </div>
+
+      {viewDetails && (
+        <MovieDetailsModal 
+          movie={movies.find(m => m.id === viewDetails)} 
+          onClose={() => setViewDetails('')} 
+        />
+      )}
 
       {/* --- EMPTY STATE EXAMPLE (Optional) --- */}
       {/* <div className="text-center py-20">
