@@ -25,7 +25,7 @@ const Dashboard = () => {
 
   const handleAddToWatchlist = async (movie) => {
     try {
-      await addItemToWatchlist(movie.id);
+      await addItemToWatchlist({ movieId: movie.id, status: 'planned', rating: null, notes: '' });
       alert(`${movie.title} added to your watchlist!`);
     } catch (error) {
       if (error.response && error.response.status === 400) {

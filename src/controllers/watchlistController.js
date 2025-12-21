@@ -1,7 +1,7 @@
 import { getWatchlistByUserId , addToWatchlist } from "../models/watchlistModel.js";
 
 const fetchWatchlist = async (req, res) => {
-    const userId = req.params.userId;
+    const userId = req.user.id;
     try {
         const watchlist = await getWatchlistByUserId(userId);
         res.status(200).json(watchlist);
@@ -11,7 +11,7 @@ const fetchWatchlist = async (req, res) => {
 };
 
 const addItemToWatchlist = async (req, res) => {
-    const userId = req.params.userId;
+    const userId = req.user.id;
     const { movieId, status, rating, notes } = req.body;
     try {
         const newItem = await addToWatchlist(userId, movieId, status, rating, notes);
