@@ -1,10 +1,12 @@
 import express from 'express';
-import authMiddleware from '../middlewares/authMiddleware';
+import { fetchAllMovies, fetchMovieById } from '../controllers/movieController.js';
+
+import authMiddleware from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/hello', authMiddleware, (req, res) => {
-    res.json({name: "John", age: 25});
-})
+router.get('/', authMiddleware, fetchAllMovies);
+router.get('/:id', authMiddleware, fetchMovieById);   
+
 
 export default router;
